@@ -1,0 +1,141 @@
+package com.kunal.Dynamic2;
+
+
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.codoid.products.exception.FilloException;
+import com.codoid.products.fillo.Connection;
+import com.codoid.products.fillo.Fillo;
+import com.codoid.products.fillo.Recordset;
+
+/**
+ * Hello world!
+ *
+ */
+public class App 
+{
+    public static void main( String[] args ) throws FilloException
+    {
+    	List<Model2> list = new ArrayList<Model2>();
+        
+    	
+    	Fillo fillo=new Fillo();
+    	Connection connection=fillo.getConnection("C:\\Users\\KUNAL\\Desktop\\ds\\kunal.xlsx");
+    	String strQuery="Select * from Sheet1 where Plant=1826 and Material=30000502";
+    	Recordset recordset=connection.executeQuery(strQuery);
+    	 
+    	while(recordset.next()){
+    		String inp=recordset.getField("Quantity");
+    		inp=inp.replaceAll("[,]", "");
+    		inp=inp.replaceAll("[-]", "");
+    		int b=Integer.parseInt(inp);
+    		Model2 model2=new Model2(recordset.getField("Plant"),recordset.getField("Posting"),recordset.getField("Material"),b);
+            list.add(model2);
+    	}
+    	 
+    	recordset.close();
+    	connection.close();
+
+           List<Model2> mergedList = new ArrayList<Model2>();
+           for(Model2 p : list) {
+                int index = mergedList.indexOf(p);
+                if(index != -1) {
+                mergedList.set(index, mergedList.get(index).merge(p));
+             } else {
+              mergedList.add(p);
+         }
+       }
+        
+         for (Model2 m : mergedList) {
+			System.out.println(m.getDate()+"  "+m.getSum());
+		}
+    	
+    }}
+
+
+
+
+...............................................................................
+package com.kunal.Dynamic2;
+
+import java.util.Objects;
+
+public class Model2 {
+
+	private final String plant;
+	private final String date;
+	private final String material;
+	private final double sum;
+
+	
+	
+	 public Model2(String plant, String date, String material, double sum) {
+		this.plant = plant;
+		this.date = date;
+		this.material = material;
+		this.sum = sum;
+	}
+
+
+
+	public String getPlant() {
+		return plant;
+	}
+	
+	
+	
+	
+
+
+
+	public String getDate() {
+		return date;
+	}
+
+
+
+	public String getMaterial() {
+		return material;
+	}
+
+
+
+	public double getSum() {
+		return sum;
+	}
+
+
+
+	@Override
+	    public boolean equals(Object o) {
+	        if (this == o) return true;
+	        if (o == null || getClass() != o.getClass()) return false;
+	        Model2 that = (Model2) o;
+	        return Objects.equals(date, that.date) &&
+	                Objects.equals(plant, that.plant);
+	    }
+	
+	
+	@Override
+    public int hashCode() {
+        return Objects.hash(plant, date);
+    }
+
+//    @Override
+//    public String toString() {
+//        return "PackingListRow{" +
+//                "isbn='" + date + '\'' +
+//                ", palletNumber=" + plant +
+//                ", quantity=" + sum +
+//                '}';
+//    }
+
+    public Model2 merge(Model2 other) {
+        assert(this.equals(other));
+        return new Model2(this.plant, this.date, this.material,this.sum +other.sum) ;
+    }
+	
+}
+
